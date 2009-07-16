@@ -1,0 +1,11 @@
+#lang scheme
+(require scheme/tcp)
+(require "utilities.ss")
+(define (client)
+  (let-values ([(server->me me->server)
+                (tcp-connect "localhost" 2000)])
+    (write "(display 'foo)" me->server)
+    (close-output-port me->server)
+    (let ([response (read server->me)])
+      (display response) (newline)
+      (close-input-port server->me))))
