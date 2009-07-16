@@ -1,14 +1,14 @@
 #lang scheme
 (require scheme/tcp)
 (require "utilities.ss")
-(define (server)
-  (let ([listener (tcp-listen 2000)])
+(define (server port)
+  (let ([listener (tcp-listen port)])
     (let-values ([(client->me me->client)
                   (tcp-accept listener)])
-      (let ([code-read (read client->me)])
+      (let ([name-read (read client->me)] [code-read (read client->me)])
         (if code-read
-            (run-and-print-with-label "Unknown Client" code-read)
-            (write 'who-are-you? me->client)))
+            (begin (write 'received me->client) (run-and-print-with-label name-read code-read))
+            (write 'wtf? me->client)))
           (close-output-port me->client)
           (close-input-port client->me))))
   
