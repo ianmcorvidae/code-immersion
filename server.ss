@@ -2,7 +2,7 @@
 (require scheme/tcp)
 (provide server)
 (require "utilities.ss")
-(define (server port)
+(define (server #:port [port 2000])
   (let ([listener (tcp-listen port)])
     (let loop ()
     (let-values ([(client->me me->client)

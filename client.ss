@@ -1,7 +1,7 @@
 #lang scheme
 (require scheme/tcp)
 (require "utilities.ss")
-(define (send-to-server name-string code-string server port)
+(define (send-to-server #:name [name-string "Unconfigured Name"] code-string #:server [server "localhost"] #:port [port 2000])
   (let-values ([(server->me me->server)
                 (tcp-connect server port)])
     (write name-string me->server) 
