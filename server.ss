@@ -38,7 +38,7 @@
             (cond 
               ;TODO: Write a way to send source to the client (AGPL compliance).
               [(eq? code-read 'request-source)
-               (write 'not-yet-implemented-sorry me->client)]
+               (write (print-all-source) me->client)]
               ;TODO: Write some sort of interactive help.
               [(eq? code-read 'help)
                (write 'not-yet-implemented-sorry me->client)]
