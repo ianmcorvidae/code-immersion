@@ -33,11 +33,24 @@
       ;input. Possibly irrecoverably. Fix at some point, or, well, don't do that.
       (let ([name-read (read client->me)] [code-read (read client->me)])
         (if code-read
-	    ;Tell the client that we got what they said... or didn't. For now,
-	    ;this uses run-and-print-with-label from utilities.ss, but this 
-	    ;should be replaced with a queueing system. Note: currently, this 
-	    ;should never ever fail, hence the 'wtf?'
-            (reply-and-process-name-and-code #:reply-to-port me->client #:process-with-function run-and-print-with-label name-read code-read)
+            ;Check to see if they're just requesting the source, in which case
+            ;react differently
+            (cond 
+              ;TODO: Write a way to send source to the client (AGPL compliance).
+              [(eq? code-read 'request-source)
+               (write 'not-yet-implemented-sorry me->client)]
+              ;TODO: Write some sort of interactive help.
+              [(eq? code-read 'help)
+               (write 'not-yet-implemented-sorry me->client)]
+              ;Tell the client that we got what they said... or didn't. For 
+              ;now, this uses run-and-print-with-label from utilities.ss, 
+              ;but this should be replaced with a queueing system. Note:
+              ;currently, this should never ever fail, hence the 'wtf?'
+              [else 
+               (reply-and-process-name-and-code 
+                #:reply-to-port me->client 
+                #:process-with-function run-and-print-with-label 
+                name-read code-read)])
             (write 'wtf? me->client)))
           (close-output-port me->client)
           (close-input-port client->me))
