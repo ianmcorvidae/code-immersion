@@ -37,7 +37,7 @@
 	    ;this uses run-and-print-with-label from utilities.ss, but this 
 	    ;should be replaced with a queueing system. Note: currently, this 
 	    ;should never ever fail, hence the 'wtf?'
-            (begin (write 'received me->client) (run-and-print-with-label name-read code-read))
+            (reply-and-process-name-and-code #:reply-to-port me->client #:process-with-function run-and-print-with-label name-read code-read)
             (write 'wtf? me->client)))
           (close-output-port me->client)
           (close-input-port client->me))
