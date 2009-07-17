@@ -19,9 +19,17 @@
 #lang scheme
 (require mzlib/string)
 (provide ignoring-errors run-and-print-with-label)
+;A basic function that runs whatever code you throw at it, in a string, ignoring
+;every error that said code might have (returning #t). Should probably return
+;a special value to indicate there was an error, but this is unnecessary for now.
 (define (ignoring-errors input-string)
     (with-handlers ([(lambda (exn) #t) (lambda (exn) #t)])
       (eval (read-from-string input-string))))
+;Formatting and printing function, mostly for the server but could be useful
+;in a client if we want to implement peer-to-peer sorts of interactions. Should
+;be made more configurable, e.g. with a format string (although I don't know 
+;the scheme equivalent of CL's FORMAT). This whole string-of-DISPLAY-calls thing
+;is ugly. D:
 (define (run-and-print-with-label label-string code-string) 
   (display label-string) (display ":\t") (display code-string) (display "\n")
   (ignoring-errors code-string) (display "\n"))
