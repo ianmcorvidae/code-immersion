@@ -19,6 +19,7 @@
 #lang scheme
 (require scheme/tcp)
 (require "utilities.ss")
+(provide send-to-server)
 ;The lowest-level "send some code to the server" function
 (define (send-to-server #:name [name-string "Unconfigured Name"] code-string #:server [server "localhost"] #:port [port 2000])
   (let-values ([(server->me me->server)
