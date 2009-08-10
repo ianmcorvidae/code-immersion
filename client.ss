@@ -19,20 +19,26 @@
 #lang scheme
 (require scheme/tcp)
 (require "utilities.ss")
-(provide send-to-server)
+(provide send-to-server register-with)
+;registration function
+;#:server Server hostname or IP, as a string.
+;#:port Server port, as an integer.
+(define (register-with #:server [server "localhost"] #:port [port 2000])
+  (send-to-server #:server server #:port port #:type 'register ""))
 ;The lowest-level "send some code to the server" function
-(define (send-to-server #:name [name-string "Unconfigured Name"] code-string #:server [server "localhost"] #:port [port 2000])
+;#:name Your identifier to the server, as a string.
+;#:server Server hostname or IP, as a string.
+;#:port Server port, as an integer.
+;#:type Type of message, as a quoted symbol. 
+;       Standard values: 'code 'text 'register 'source
+;message Content of message. For text messages, string. 
+;                            For code, quoted expressions.
+;                            For other operations, blank string.
+(define (send-to-server #:name [name "Unconfigured Name"] #:server [server "localhost"] #:port [port 2000] #:type type-quote message)
   (let-values ([(server->me me->server)
                 (tcp-connect server port)])
-    ;This is sort of hackish, it seems to me, but this just writes the name-string 
-    ;and then the code-string (which is expected to be a single s-expression) to 
-    ;the TCP port. read-from-string should (is!) very nice about doing this right,
-    ;although it might cause nasty choking if someone sends improper input. To fix.
-    (write name-string me->server) 
-    (write code-string me->server)
+    ;Doing this right for once: now it sends a pretty s-expression
+    (write `(,name ',type-quote ,message) me->server)
+    ;clean up, clean up, everybody everywhere...
     (close-output-port me->server)
-    ;A product of the tutorial I was copying from -- however, it is probably useful
-    ;to have the client get a response from the server indicating success or failure.
-    (let ([response (read server->me)])
-      (display response) (newline)
-      (close-input-port server->me))))
+    (close-input-port server->me)))

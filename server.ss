@@ -20,8 +20,21 @@
 (require scheme/tcp)
 (provide server)
 (require "utilities.ss")
+;new testing server just prints out what it's given. To be moved later, probably into a package of tests.
+(define (new-server #:port [port 2000])
+  (let ([listener (tcp-listen port)])
+    (let loop ()
+      (let-values ([(client->me me->client)
+                    (tcp-accept listener)])
+        (let ([s-read (read client->me)])
+          (print s-read))
+        (close-output-port me->client)
+        (close-input-port client->me))
+      (loop))))
+;;;;;;; BROKEN RIGHT NOW, WARNING - doesn't handle new style of input ;;;;;;;
 ;The server! This could possibly be better-named. Anyway, configurable port --
 ;for now assuming that we want it to just listen on every address.
+;;;;;;; BROKEN RIGHT NOW, WARNING - doesn't handle new style of input ;;;;;;;
 (define (server #:port [port 2000])
   (let ([listener (tcp-listen port)])
     ;So it keeps going, and going, and going...
