@@ -17,51 +17,90 @@
 ;    along with Code-Immersion.  If not, see <http://www.gnu.org/licenses/>.  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #lang scheme
-(require mzlib/string)
+(require mzlib/defmacro)
 (provide ignoring-errors 
-         run-and-print-with-label 
-         reply-and-process-name-and-code 
          print-all-source
-         verify-data)
+         format-prettily
+         verify-data
+         define-listener-and-verifier)
 ;Data validation function
 (define (verify-data data)
-  #t)
-;A basic function that runs whatever code you throw at it, in a string, ignoring
-;every error that said code might have (returning #t). Should probably return
-;a special value to indicate there was an error, but this is unnecessary for now.
-(define (ignoring-errors input-string)
-    (with-handlers ([(lambda (exn) #t) (lambda (exn) #t)])
-      (eval (read-from-string input-string))))
-;Formatting and printing function, mostly for the server but could be useful
-;in a client if we want to implement peer-to-peer sorts of interactions. Should
-;be made more configurable, e.g. with a format string (although I don't know 
-;the scheme equivalent of CL's FORMAT). This whole string-of-DISPLAY-calls thing
-;is ugly. D:
-(define (run-and-print-with-label label-string code-string) 
-  (display label-string) (display ":\t") (display code-string) (display "\n")
-  (ignoring-errors code-string) (display "\n"))
-;This appears to work! Takes a port to reply to and a function (taking two 
-;arguments, the last two non-keyword arguments of this function), and optionally 
-;a choice of what to reply with (default 'received)
-(define (reply-and-process-name-and-code #:reply-to-port reply-to #:reply-with [reply 'received]  #:process-with-function function name-string code-string)
-  (begin
-    (write reply reply-to)
-    (function name-string code-string)))
-;Some preliminary tinkering with sending of source code re: AGPL compliance
+  (cond
+    [(not (list? data)) #f]
+    [(not (eq? (length data) 3)) #f]
+    [(and (string? (car data)) (string? (cadr data)) (or (string? (caddr data)) (list? (caddr data)))) 
+     (cond 
+       [(equal? (cadr data) "code") 
+        (if (list? (caddr data)) #t #f)]
+       [(equal? (cadr data) "text")
+        (if (string? (caddr data)) 
+            (if (not (string=? (caddr data) "")) #t #f) 
+            #f)]
+       [(equal? (cadr data) "register")
+        (if (string? (caddr data)) 
+            (if (string=? (caddr data) "") #t #f) 
+            #f)]
+       [(equal? (cadr data) "source")
+        (if (string? (caddr data)) 
+            (if (string=? (caddr data) "") #t #f) 
+            #f)]
+       [else
+        (if (string? (caddr data)) #t #f)])]
+    [else #f]))
+;formatting function for displaying messages/code
+(define (format-prettily message #:format-string [format-string "~a from ~a: ~a~n"])
+  (let ([name (car message)] [type (cadr message)] [message (caddr message)])
+    (display (format format-string type name message))))
+
+;A basic function that runs whatever code you throw at it ignoring every error that 
+;said code might have (returning #f). Should probably return a special value to 
+;indicate there was an error, but this is unnecessary for now.
+(define (ignoring-errors code)
+    (with-handlers ([(lambda (exn) #f) (lambda (exn) #f)])
+      (eval code)))
+;AGPL compliance: making it possible to send source through the application
+;create a string from a text file. probably hackish and bad. So shoot me.
 (define (string-from-text-file text-file-port)
   (let ([return-string ""])
       (if (eof-object? (peek-string 1 0 text-file-port))
           return-string
           (string-append (read-line text-file-port) "\n" 
                            (string-from-text-file text-file-port)))))
+;return a massive string that's all the source files all together
 (define (print-all-source)
   (let ([utilities (open-input-file "utilities.ss" #:mode 'text)]
         [server (open-input-file "server.ss" #:mode 'text)]
         [client (open-input-file "client.ss" #:mode 'text)]
+        [daemon (open-input-file "daemon.ss" #:mode 'text)]
+        [datastore (open-input-file "datastore.ss" #:mode 'text)]
         [license (open-input-file "COPYING" #:mode 'text)])
     (string-append "UTILITIES.SS:\n\n" (string-from-text-file utilities) "\n\n" 
+                   "DATASTORE.SS:\n\n" (string-from-text-file datastore) "\n\n"
                    "SERVER.SS:\n\n" (string-from-text-file server) "\n\n" 
+                   "DAEMON.SS:\n\n" (string-from-text-file daemon) "\n\n"
                    "CLIENT.SS:\n\n" (string-from-text-file client) "\n\n"
                    "COPYING:\n\n" (string-from-text-file license))))
-
-  
+;server/daemon macro!
+(define-macro (define-listener-and-verifier port close? body)
+     `(let ([listener (tcp-listen ,port)])
+        ;So it keeps going, and going, and going...
+        (let loop ()
+          (let-values ([(client->me me->client)
+                        (tcp-accept listener)])
+            ;Reading the s-expression that should have been sent by a client, 
+            ;verifying it, then processing it based on the type
+            (let ([data (read client->me)])  
+              (if (verify-data data) 
+                  (let ([name (car data)]
+                        [type (cadr data)]
+                        [message (caddr data)])
+                    ;Check what exactly they want with a cond over (eq? type ...)
+                    (cond
+                      ,@body))
+                  (begin 
+                    (write '("server" "text" "Malformed data was ignored.") me->client)
+                    (close-output-port me->client))))
+            ;Whoops, we don't want this closed sometimes!
+            ,(when close? '(close-output-port me->client))
+            (close-input-port client->me))
+            (loop))))

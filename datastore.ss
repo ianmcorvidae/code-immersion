@@ -17,32 +17,20 @@
 ;    along with Code-Immersion.  If not, see <http://www.gnu.org/licenses/>.  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #lang scheme
-(require scheme/tcp)
-(require "utilities.ss")
 (require "config.ss")
-(provide send-to-server
-         send-to-daemon
-         send-to)
-;The lowest-level "send something somewhere" function
-;#:name Your identifier to the server, as a string.
-;#:place Server/Daemon hostname or IP, as a string.
-;#:port Server/Daemon port, as an integer.
-;#:type Type of message, as a string. 
-;       Standard values: "code" "text" "register" "source"
-;message Content of message. For text messages, string. 
-;                            For code, quoted expressions.
-;                            For other operations, blank string.
-(define (send-to #:name [name NAME] #:place place #:port port #:type type message)
-  (let-values ([(place->me me->place)
-                (tcp-connect place port)])
-    ;Doing this right for once: now it sends a pretty s-expression
-    (write `(,name ,type ,message) me->place)
-    ;clean up, clean up, everybody everywhere...
-    (close-output-port me->place)
-    (let ([response (read place->me)])
-      (format-prettily response)
-      (close-input-port place->me))))
-(define (send-to-server #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] #:type type message)
-  (send-to #:name name #:place server #:port port #:type type message))
-(define (send-to-daemon #:name [name NAME] #:server [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
-  (send-to #:name name #:place daemon #:port port #:type type message))
+(provide list-datastore DATASTORE)
+;data storage: list datastore
+(define list-datastore
+  (let ([list-datastore '()])
+    (list
+     ;Datastore put function
+     (lambda (type message)
+       #t)
+     ;Datastore get function
+     (lambda (type message)
+       (format "~a ~a" type message)))))
+(define DATASTORE 
+  (cond 
+    [(equal? DATASTORE-TYPE "list-datastore")
+     list-datastore]
+    [else list-datastore]))
