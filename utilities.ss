@@ -73,13 +73,15 @@
         [client (open-input-file "client.ss" #:mode 'text)]
         [daemon (open-input-file "daemon.ss" #:mode 'text)]
         [datastore (open-input-file "datastore.ss" #:mode 'text)]
-        [license (open-input-file "COPYING" #:mode 'text)])
+        [config-example (open-input-file "config-example.ss" #:mode 'text)]
+        [copying (open-input-file "COPYING" #:mode 'text)])
     (string-append "UTILITIES.SS:\n\n" (string-from-text-file utilities) "\n\n" 
                    "DATASTORE.SS:\n\n" (string-from-text-file datastore) "\n\n"
                    "SERVER.SS:\n\n" (string-from-text-file server) "\n\n" 
                    "DAEMON.SS:\n\n" (string-from-text-file daemon) "\n\n"
                    "CLIENT.SS:\n\n" (string-from-text-file client) "\n\n"
-                   "COPYING:\n\n" (string-from-text-file license))))
+                   "CONFIG-EXAMPLE.SS:\n\n" (string-from-text-file config-example) "\n\n"
+                   "COPYING:\n\n" (string-from-text-file copying))))
 ;server/daemon macro!
 (define-macro (define-listener-and-verifier port close? body)
      `(let ([listener (tcp-listen ,port)])
