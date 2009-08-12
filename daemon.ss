@@ -44,8 +44,7 @@
 
 ;the daemon itself
 (define (daemon #:server [server SERVER] #:server-port [server-port SERVER-PORT] #:self-port [self-port DAEMON-PORT] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
-  ;(thread (λ () (register-with #:server server #:port server-port))) 
-  (thread register-with)
+  (thread (λ () (register-with #:server server #:port server-port))) 
   (define-listener-and-verifier self-port #t
     (;Send source to the client (AGPL compliance).
      [(equal? type "source")
