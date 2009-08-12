@@ -21,7 +21,11 @@
 (provide ignoring-errors 
          run-and-print-with-label 
          reply-and-process-name-and-code 
-         print-all-source)
+         print-all-source
+         verify-data)
+;Data validation function
+(define (verify-data data)
+  #t)
 ;A basic function that runs whatever code you throw at it, in a string, ignoring
 ;every error that said code might have (returning #t). Should probably return
 ;a special value to indicate there was an error, but this is unnecessary for now.

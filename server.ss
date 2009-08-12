@@ -31,41 +31,55 @@
         (close-output-port me->client)
         (close-input-port client->me))
       (loop))))
-;;;;;;; BROKEN RIGHT NOW, WARNING - doesn't handle new style of input ;;;;;;;
 ;The server! This could possibly be better-named. Anyway, configurable port --
-;for now assuming that we want it to just listen on every address.
-;;;;;;; BROKEN RIGHT NOW, WARNING - doesn't handle new style of input ;;;;;;;
+;for now assuming that we want it to just listen on every address. Right now, 
+;only sending of source really works.
+
+;TODO: Make everything else work again
 (define (server #:port [port 2000])
   (let ([listener (tcp-listen port)])
     ;So it keeps going, and going, and going...
     (let loop ()
-    (let-values ([(client->me me->client)
-                  (tcp-accept listener)])
-      ;Reading the two s-expressions that should be sent by clients --- name
-      ;followed by a single s-expression of code. Will probably choke on bad
-      ;input. Possibly irrecoverably. Fix at some point, or, well, don't do that.
-      (let ([name-read (read client->me)] [code-read (read client->me)])
-        (if code-read
-            ;Check to see if they're just requesting the source, in which case
-            ;react differently
-            (cond 
-              ;TODO: Write a way to send source to the client (AGPL compliance).
-              [(eq? code-read 'request-source)
-               (write (print-all-source) me->client)]
-              ;TODO: Write some sort of interactive help.
-              [(eq? code-read 'help)
-               (write 'not-yet-implemented-sorry me->client)]
-              ;Tell the client that we got what they said... or didn't. For 
-              ;now, this uses run-and-print-with-label from utilities.ss, 
-              ;but this should be replaced with a queueing system. Note:
-              ;currently, this should never ever fail, hence the 'wtf?'
-              [else 
-               (reply-and-process-name-and-code 
-                #:reply-to-port me->client 
-                #:process-with-function run-and-print-with-label 
-                name-read code-read)])
-            (write 'wtf? me->client)))
-          (close-output-port me->client)
-          (close-input-port client->me))
+      (let-values ([(client->me me->client)
+                    (tcp-accept listener)])
+        ;Reading the s-expression that should have been sent by a client, 
+        ;verifying it, then processing it based on the type
+        (let ([data (read client->me)])  
+          (if (verify-data data)
+          ;Check what exactly they want with a cond over (eq? type ...)
+            (let ([name (car data)]
+                  [type (cadr data)]
+                  [message (caddr data)])
+              (cond 
+                ;Send source to the client (AGPL compliance).
+                [(equal? type "source")
+                 (write (print-all-source) me->client)]
+                ;TODO: Write some sort of interactive help.
+                [(equal? type "help")
+                 (write "Help is not yet implemented" me->client)]
+                ; Registration function -- currently sends two strings then 
+                ; causes an exit on the clientside
+                [(equal? type "register")
+                 ;(register-client me->client)
+                 (write "Registration is not yet implemented" me->client)
+                 (write "sending test second string" me->client)
+                 (write "break" me->client)]
+                ;Dispatching text
+                [(equal? type "text")
+                 ;(dispatch-message message)
+                 (write "Text dispatching is not yet implemented" me->client)]
+                ;Dispatching code
+                [(equal? type "code")
+                 ;(dispatch-code message)
+                 ;(reply-and-process-name-and-code 
+                 ; #:reply-to-port me->client 
+                 ; #:process-with-function run-and-print-with-label 
+                 ; name-read code-read)
+                 (write "Code dispatching is not yet implemented" me->client)]
+                ;Else be upset
+                [else (write (format "Invalid type: ~a" type) me->client)]))
+            (write "Malformed data" me->client)))
+        (close-output-port me->client)
+        (close-input-port client->me))
       (loop))))
   

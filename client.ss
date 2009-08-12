@@ -24,21 +24,34 @@
 ;#:server Server hostname or IP, as a string.
 ;#:port Server port, as an integer.
 (define (register-with #:server [server "localhost"] #:port [port 2000])
-  (send-to-server #:server server #:port port #:type 'register ""))
+  (let-values ([(server->me me->server)
+                (tcp-connect server port)])
+    (write `("" "register" "") me->server)
+    ;clean up, clean up, everybody everywhere...
+    (close-output-port me->server) 
+    (do ([exit-loop #f]) (exit-loop)
+      (let ([response (read server->me)])
+        (cond
+          [(eof-object? response)] 
+          [(equal? response "break") (set! exit-loop #t)]
+          [else (begin (display response) (newline))])))
+    (close-input-port server->me)))
 ;The lowest-level "send some code to the server" function
 ;#:name Your identifier to the server, as a string.
 ;#:server Server hostname or IP, as a string.
 ;#:port Server port, as an integer.
-;#:type Type of message, as a quoted symbol. 
-;       Standard values: 'code 'text 'register 'source
+;#:type Type of message, as a string. 
+;       Standard values: "code" "text" "register" "source"
 ;message Content of message. For text messages, string. 
 ;                            For code, quoted expressions.
 ;                            For other operations, blank string.
-(define (send-to-server #:name [name "Unconfigured Name"] #:server [server "localhost"] #:port [port 2000] #:type type-quote message)
+(define (send-to-server #:name [name "Unconfigured Name"] #:server [server "localhost"] #:port [port 2000] #:type type message)
   (let-values ([(server->me me->server)
                 (tcp-connect server port)])
     ;Doing this right for once: now it sends a pretty s-expression
-    (write `(,name ',type-quote ,message) me->server)
+    (write `(,name ,type ,message) me->server)
     ;clean up, clean up, everybody everywhere...
     (close-output-port me->server)
-    (close-input-port server->me)))
+    (let ([response (read server->me)])
+      (display response) (newline)
+      (close-input-port server->me))))
