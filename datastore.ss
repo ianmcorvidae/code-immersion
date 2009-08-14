@@ -18,7 +18,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #lang scheme
 (require "config.ss")
-(provide list-datastore hash-datastore DATASTORE)
+(provide (all-defined-out))
 ;data storage: list datastore
 (define list-datastore
   (let ([list-datastore '()])

@@ -20,9 +20,7 @@
 (require scheme/tcp)
 (require "utilities.ss")
 (require "config.ss")
-(provide send-to-server
-         send-to-daemon
-         send-to)
+(provide (all-defined-out))
 ;The lowest-level "send something somewhere" function
 ;#:name Your identifier to the server, as a string.
 ;#:place Server/Daemon hostname or IP, as a string.

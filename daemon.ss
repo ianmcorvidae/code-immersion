@@ -21,7 +21,7 @@
 (require "utilities.ss")
 (require "datastore.ss")
 (require "config.ss")
-(provide register-with)
+(provide daemon register-with)
 ;registration function
 ;#:server Server hostname or IP, as a string.
 ;#:port Server port, as an integer.
