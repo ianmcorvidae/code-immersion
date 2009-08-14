@@ -39,10 +39,33 @@
     (write `(,name ,type ,message) me->place)
     ;clean up, clean up, everybody everywhere...
     (close-output-port me->place)
+    ;listen for a response, which it should give!
     (let ([response (read place->me)])
-      (format-prettily response)
-      (close-input-port place->me))))
+      (close-input-port place->me)
+      response)))
+;Send something to server. Parameters as above, except s/place/server|daemon/ as applies
 (define (send-to-server #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] #:type type message)
   (send-to #:name name #:place server #:port port #:type type message))
-(define (send-to-daemon #:name [name NAME] #:server [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
+(define (send-to-daemon #:name [name NAME] #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
   (send-to #:name name #:place daemon #:port port #:type type message))
+;Send code to everyone with this; all parameters as send-to-server except code: quoted code to be sent
+(define (send-code #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] code)
+  (send-to-server #:name name #:server server #:port port #:type "code" code))
+;Send a message to everyone with this; all parameters as send-to-server except message, which will always be a string.
+(define (send-message #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] message)
+  (send-to-server #:name name #:server server #:port port #:type "text" message))
+;Request message from the daemon
+(define (request-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+  (send-to-daemon #:daemon daemon #:port port #:type "text" `(,name ,index)))
+;Request code from the daemon
+(define (request-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+  (send-to-daemon #:daemon daemon #:port port #:type "code" `(,name ,index)))
+;Pretty-print requested message
+(define (display-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
+  (format-prettily (request-message #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
+;Pretty-print requested code
+(define (display-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
+  (format-prettily (request-code #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
+;Evaluate requested code
+(define (evaluate-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+  (eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))

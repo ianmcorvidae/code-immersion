@@ -17,6 +17,7 @@
 ;    along with Code-Immersion.  If not, see <http://www.gnu.org/licenses/>.  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #lang scheme
+(require "config.ss")
 (require mzlib/defmacro)
 (provide ignoring-errors 
          print-all-source
@@ -35,7 +36,7 @@
        [(equal? (cadr data) "text")
         (if (string? (caddr data)) 
             (if (not (string=? (caddr data) "")) #t #f) 
-            #f)]
+            (if (list? (caddr data)) #t #f))]
        [(equal? (cadr data) "register")
         (if (string? (caddr data)) 
             (if (string=? (caddr data) "") #t #f) 
@@ -48,7 +49,7 @@
         (if (string? (caddr data)) #t #f)])]
     [else #f]))
 ;formatting function for displaying messages/code
-(define (format-prettily message #:format-string [format-string "~a from ~a: ~a~n"])
+(define (format-prettily message #:format-string [format-string FORMAT-STRING])
   (let ([name (car message)] [type (cadr message)] [message (caddr message)])
     (display (format format-string type name message))))
 

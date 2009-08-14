@@ -18,7 +18,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #lang scheme
 (require "config.ss")
-(provide list-datastore DATASTORE)
+(provide list-datastore hash-datastore DATASTORE)
 ;data storage: list datastore
 (define list-datastore
   (let ([list-datastore '()])
@@ -29,8 +29,32 @@
      ;Datastore get function
      (lambda (type message)
        (format "~a ~a" type message)))))
+;data storage: hashtable datastore
+(define hash-datastore
+  (let ([hash-datastore (make-hash)])
+    (list
+     ;Put
+     (lambda (type message)
+       (let* ([hash-key (string-append (car message) "-" type)]
+              [hash-return-value (hash-ref hash-datastore hash-key #f)]
+              [value-to-place (cadr message)])
+         (cond
+           [(not (list? hash-return-value)) (hash-set! hash-datastore hash-key (list value-to-place))]
+           [else (hash-set! hash-datastore hash-key (cons value-to-place hash-return-value))])))
+     ;Get
+     (lambda (type message)
+       (let* ([hash-key (string-append (car message) "-" type)]
+              [hash-return-value (hash-ref hash-datastore hash-key #f)]
+              [list-index (cadr message)])
+         (cond
+           [(not (list? hash-return-value)) (format "~a is not a list. The request was: ~a~nThis error is probably because there were no values found." hash-return-value hash-key)]
+           [(not (> (length hash-return-value) list-index)) "Not enough values in list."]
+           [else (list-ref hash-return-value list-index)])))
+     )))
 (define DATASTORE 
   (cond 
     [(equal? DATASTORE-TYPE "list-datastore")
      list-datastore]
-    [else list-datastore]))
+    [(equal? DATASTORE-TYPE "hash-datastore")
+     hash-datastore]
+    [else hash-datastore]))
