@@ -1,1 +1,205 @@
+INTRODUCTION
 
+Hello and welcome to the manual for code-immersion, a lightweight PLT scheme framework for code collaboration, designed for a Hampshire College class (by the name "Code Immersion") and implemented to run on top of DrScheme. If you'd like to just get started with code-immersion rapidly (and have a bit of knowledge), take a look at the quick-start guide; if you're new to the entire system, have a look at the comprehensive walkthrough; if you need specific information on some bit of the framework, look into the reference section.
+
+TABLE OF CONTENTS
+
+ I. Introduction
+ II. Quick-start guide
+  A. Prerequisites
+  B. Get code-immersion
+  C. Configure
+   i. SERVER
+   ii. DAEMON
+   iii. SERVER-PORT
+   iv. DAEMON-PORT
+   v. NAME
+   vi. FORMAT-STRING
+   vii. DATASTORE-TYPE
+  D. Start background processes
+   i. server
+   ii. daemon
+  E. Use client functions
+   i. send-code and send-message
+   ii. display-code and display-message
+   iii. evaluate-code
+ III. Comprehensive Walkthrough
+ IV. Reference
+  A. Configuration options
+   i. SERVER
+   ii. DAEMON
+   iii. SERVER-PORT
+   iv. DAEMON-PORT
+   v. NAME
+   vi. FORMAT-STRING
+   vii. DATASTORE-TYPE
+  B. Function Reference
+   i. Server
+    a. Exported
+     1. (server #:port [port SERVER-PORT])
+    b. Internal
+     1. (register-client port)
+     2. (get-output-port-list)
+     3. (dispatch name type message)
+     4. (new-server #:port [port SERVER-PORT])
+   ii. Daemon
+    a. Exported
+     1. (daemon #:server [server SERVER] #:server-port [server-port SERVER-PORT] #:self-port [self-port DAEMON-PORT] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
+     2. (register-with #:server [server SERVER] #:port [port SERVER-PORT] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
+   iii. Client
+    a. Exported
+     1. (send-to #:name [name NAME] #:place place #:port port #:type type message)
+     2. (send-to-server #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] #:type type message)
+     3. (send-to-daemon #:name [name NAME] #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
+     4. (send-code #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] code)
+     5. (send-message #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] message)
+     6. (request-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+     7. (request-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+     8. (display-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
+     9. (display-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
+     10. (evaluate-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+   iv. Datastore
+    a. Exported
+     1. list-datastore
+     2. hash-datastore
+     3. DATASTORE
+   v. Utilities
+    a. Exported
+     1. (verify-data data)
+     2. (format-prettily message #:format-string [format-string FORMAT-STRING])
+     3. (ignoring-errors code)
+     4. (print-all-source)
+     5. (define-listener-and-verifier port close? body)
+    b. Internal
+     1. (string-from-text-file text-file-port)
+
+QUICK-START GUIDE
+ A. Prerequisites
+
+You should get DrScheme and an mzscheme environment set up first. See http://plt-scheme.org/ for more details on that.
+
+ B. Get code-immersion
+
+git clone git://github.com/ianmcorvidae/code-immersion.git
+
+or 
+
+http://github.com/ianmcorvidae/code-immersion/tree/master and hit the "Download" button. Put this somewhere that you'll remember, you'll be using it a bit.
+
+ C. Configure
+
+Wherever you put code-immersion, unzip/untar it and copy config-example.ss to config.ss in the same directory. Then, edit config.ss and change the values below to what they should be in the (define ...) form (that is: if you want to change the value of SERVER from the default of "localhost" to "192.168.0.13", change it to (define SERVER "192.168.0.13"))
+  i. SERVER
+The IP address or hostname of the server that the client and the daemon should be connecting to. Make it a string: put quotes around it.
+  ii. DAEMON
+The IP address or hostname of the daemon that the client should be connecting to. Make it a string too.
+  iii. SERVER-PORT
+The TCP port number that the above host uses. Don't make this one a string.
+  iv. DAEMON-PORT
+The TCP port number for the above host (except this time, the daemon one, not the server one). Not a string either.
+  v. NAME
+This is the name you want to go by for the sake of the server and client (and thereby, in anyone else's daemon. String.
+  vi. FORMAT-STRING
+Probably not important to you, but this changes how things are displayed when you use the display-code or display-message functions. See the reference section for more.
+  vii. DATASTORE-TYPE
+Probably not important (or at least, not needing change). This changes what datastore your daemon uses for things. Right now, only one works anyway.
+
+ D. Start background processes
+
+  i. server
+Load up server.ss and run (server) -- or, if you're really frisky, start it up with a custom port: (server #:port <number>) where <number> is your self-chosen port number (note: SERVER-PORT above will change this, but doing it by way of the keyword overrides that.
+  ii. daemon
+Load up daemon.ss and run (daemon) -- if you were really frisky above, add the keyword #:server-port <number> to match the above value, or change the daemon's port number with #:self-port <number>. Use #:server to change what hostname/IP the server's at.
+ E. Use client functions
+  i. send-code and send-message
+These send code and send messages. If you changed the port for the server with keyword options (not SERVER-PORT) then you'll need to deal with that here too. See Reference.
+  ii. display-code and display-message
+These display prettily (well, sort of) code or messages from others. Format is (display-(code|message) #:from <name> #:number <number>) where <name> is the name of the person whose code or message you want to see, and <number> is the index (starts with 0 from most-recently-received) of the code or message you want to see.
+  iii. evaluate-code
+Same format as the display function, except this one runs the code. Use at your own risk; if someone sends you code that makes your computer explode or somesuch, use of this function is not recommended. Also, get new programming buddies.
+
+COMPREHENSIVE WALKTHROUGH
+
+REFERENCE
+
+  A. Configuration options
+   i. SERVER
+String. The hostname or IP address of the server to be used by the daemon and client. Default: "localhost"
+   ii. DAEMON
+String. The hostname or IP address of the daemon to be used by the client. Default: "localhost"
+   iii. SERVER-PORT
+Integer. The TCP port number for the server to listen on, and for the daemon and client to connect to. Default: 2000
+   iv. DAEMON-PORT
+Integer. The TCP port number for the daemon to listen on, and for the client to connect to. Default: 2005
+   v. NAME
+String. Some unique identifier for the individual user of the software; used by the client and seen by the daemon. Default: "Unconfigured Name"
+   vi. FORMAT-STRING
+String. Used by the function (format-prettily ...) to format the type, name, and message being printed. Used within the function call thus: (format format-string type name message)
+   vii. DATASTORE-TYPE
+String. Defines which datastore to use. Currently, valid values are "list-datastore" and "hash-datastore", but only hash-datastore actually works. Default: "hash-datastore".
+
+  B. Function Reference
+   i. Server
+    a. Exported
+     1. (server #:port [port SERVER-PORT])
+Starts a listening server on TCP port 'port' or, when called without keyword arguments, on SERVER-PORT.
+    b. Internal
+     1. (register-client port)
+Adds the output port 'port' to the internal list of ports to dispatch messages to.
+     2. (get-output-port-list)
+Returns the list of ports messages should be dispatched to.
+     3. (dispatch name type message)
+Dispatches a message to all relevant sources with given name, type, and message.
+     4. (new-server #:port [port SERVER-PORT])
+Unused. Creates a dummy server that simply prints (on the server side) whatever it gets as a message. Useful only for debugging purposes.
+   ii. Daemon
+    a. Exported
+     1. (daemon #:server [server SERVER] #:server-port [server-port SERVER-PORT] #:self-port [self-port DAEMON-PORT] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
+Starts a listening daemon on port 'self-port' with datastore functions datastore-put and datastore-get; registers this daemon with server 'server' on port 'server-port'. Without keyword options, listens on DAEMON-PORT using (car DATASTORE) and (cadr DATASTORE) as datastore functions, and registers with SERVER on port SERVER-PORT.
+     2. (register-with #:server [server SERVER] #:port [port SERVER-PORT] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
+Used by (daemon) to register with a server; four options server, port, datastore-put, and datastore-get are as in that function, except that 'port' is 'server-port' in that function.
+   iii. Client
+    a. Exported
+     1. (send-to #:name [name NAME] #:place place #:port port #:type type message)
+Generic send function to a server or daemon. Sends (name type message) to 'place' on port 'port'. 'name' defaults to NAME.
+     2. (send-to-server #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] #:type type message)
+Uses (send-to ...) to send to a server; same as that function except it changes 'place' to 'server' and defaults server to SERVER and port to SERVER-PORT.
+     3. (send-to-daemon #:name [name NAME] #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
+Uses (send-to ...) to send to a daemon; same as that function except it changes 'place' to 'daemon' and defaults daemon to DAEMON and port to DAEMON-PORT.
+     4. (send-code #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] code)
+Sends the quoted s-expressions 'code' to server 'server' on port 'port' as name 'name'. Defaults to sending to server SERVER on port SERVER-PORT with name NAME.
+     5. (send-message #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] message)
+Sends the string 'message' to server 'server' on port 'port' as name 'name'. Defaults to sending to server SERVER or port SERVER-PORT with name NAME.
+     6. (request-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+Requests the message indexed 'index' in the database for user 'name' from daemon 'daemon' on port 'port'. 'daemon' and 'port' default to DAEMON and DAEMON-PORT.
+     7. (request-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+Requests the code indexed 'index' in the database for user 'name' from daemon 'daemon' on port 'port'. 'daemon' and 'port' default to DAEMON and DAEMON-PORT.
+     8. (display-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
+Displays prettily the message indexed 'index' in the database for user 'name' from daemon 'daemon' on port 'port' using the format string 'format-string'. 'daemon' and 'port' default to DAEMON and DAEMON-PORT, 'format-string' to FORMAT-STRING.
+     9. (display-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
+Displays prettily the code indexed 'index' in the database for user 'name' from daemon 'daemon' on port 'port' using the format string 'format-string'. 'daemon' and 'port' default to DAEMON and DAEMON-PORT, 'format-string' to FORMAT-STRING.
+     10. (evaluate-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+Evaluates the code indexed 'index' in the database for user 'name' from daemon 'daemon' on port 'port'. 'daemon' and 'port' default to DAEMON and DAEMON-PORT.
+   iv. Datastore
+    a. Exported
+     1. list-datastore
+Currently non-working list datastore, following standard format for datastores, returning a list of a put function and a get function.
+     2. hash-datastore
+Currently working hashtable datastore, following standard format for datastores, returning a list of a put function and a get function.
+     3. DATASTORE
+Created automatically from the configuration-option DATASTORE-TYPE, this is set to whichever datastore is configured to be used. When DATASTORE-TYPE is invalid or empty, defaults to hash-datastore.
+   v. Utilities
+    a. Exported
+     1. (verify-data data)
+Ensures that the data 'data' is in proper format (hopefully, preventing any functions from choking on that data. Returns #t when data passes, #f otherwise.
+     2. (format-prettily message #:format-string [format-string FORMAT-STRING])
+Prints message 'message' using format string 'format-string' (or default FORMAT-STRING). 'message' is in the standard (name type message) format and format-string is a string.
+     3. (ignoring-errors code)
+Executes 'code' ignoring all errors it might raise. Currently unused, but possibly useful.
+     4. (print-all-source)
+Returns all the source code of code-immersion as a (huge) string.
+     5. (define-listener-and-verifier port close? body)
+Macro (hacked-together and very nasty) that's used for both the daemon and the server. Read the code to find out more about this; it's really nasty but the code's probably more readable than any explanation that could be given here.
+    b. Internal
+     1. (string-from-text-file text-file-port)
+Creates a string from a text file given the proper file port. Used by (print-all-source).
