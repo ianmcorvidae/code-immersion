@@ -118,7 +118,78 @@ These display prettily (well, sort of) code or messages from others. Format is (
   iii. evaluate-code
 Same format as the display function, except this one runs the code. Use at your own risk; if someone sends you code that makes your computer explode or somesuch, use of this function is not recommended. Also, get new programming buddies.
 
-COMPREHENSIVE WALKTHROUGH
+COMPREHENSIVE WALKTHROUGH 
+
+(note: I will make some comments at the end for users of Ubuntu and other distributions of Linux. Unfortunately, for the sake of this walkthrough, I must assume that most people are using either Windows or Mac.)
+
+First, get yourself a copy of DrScheme and PLT Scheme from http://download.plt-scheme.org/drscheme/ and install it.
+
+Next, get code-immersion (if you haven't already). Use the "Download" button on http://github.com/ianmcorvidae/code-immersion/tree/master. Most likely you will want the .zip version. Then, find a directory where you would like to do your programming (I recommend making a separate directory for this) and unpack code-immersion into that directory.
+
+Go into the directory where code-immersion is. Copy the file called 'config-example.ss' to 'config.ss' and then edit config.ss in a text editor (or open it in DrScheme, if you so desire). You need to change a couple values:
+1.) change "Unconfigured Name" in the line that looks like (define NAME "Unconfigured Name") to your name, in quotes (e.g. I would change that line to (define NAME "Ian McEwen") ).
+2.) If you have been told an address for the server (e.g. by your teacher), you should put this in place of 'localhost' in the line reading (define SERVER "localhost"). For example, if you've been told the server is at 192.168.0.12, change that line to read (define SERVER "192.168.0.12"). If you are testing out code-immersion on your own system, do not change this line.
+
+Now, to test if the whole system is working properly. First, make another directory next to the code-immersion folder; name it what you want. (for example, if code-immersion is in the folder "C:/programming/code-immersion/" make another folder inside the "C:/programming/" folder). Open up DrScheme. It will probably ask you to choose a language. Choose the option at the very top, labeled "Module". The document it creates should have only one line, reading '#lang scheme'. 
+
+First, open two new tabs (using File -> New Tab). In two of these tabs, open up daemon.ss and server.ss from code-immersion using File -> Open. 
+Then, go to the tab where you opened up server.ss. Hit the "Run" button near the top right.
+In the smaller box that opens near the bottom of the window (called the REPL), type (server) and hit Enter.
+
+This window should then look like:
+Welcome to DrScheme, version 4.2.0.2-svn2jun2009 [3m].
+Language: Module; memory limit: 128 megabytes.
+> (server)
+
+There should be a blinking cursor on the next line. This is now set. Go to the tab where you opened up daemon.ss, and hit the "Run" button as you did on the server tab. This time, type (daemon) in the REPL to start the daemon. You should see this on the screen:
+Welcome to DrScheme, version 4.2.0.2-svn2jun2009 [3m].
+Language: Module; memory limit: 128 megabytes.
+> (daemon)
+text from server: Registered.
+
+The daemon is now running. Now go to the third tab, the one where you haven't yet done anything. Enter the following line below the '#lang scheme':
+(require "../code-immersion/client.ss")
+
+Save this file with the extension .ss in the folder you created just before you opened up DrScheme (for example, if code-immersion is in "C:/programming/code-immersion/ and the folder you created was "C:/programming/test/" then the file should be "C:/programming/test/something.ss"). Now, hit "Run". In the REPL that should appear, type (send-message "test") and hit Enter. This should complete and give you another line of REPL starting with a >; your REPL window should look like this:
+Welcome to DrScheme, version 4.2.0.2-svn2jun2009 [3m].
+Language: Module; memory limit: 128 megabytes.
+> (send-message "test")
+("server" "text" "Dispatched.")
+>
+
+Now, go back to the daemon.ss window. You should now see a line like this:
+text from Ian McEwen: test
+
+One last test -- go back to the new file you created and type:
+(display-message #:number 0 #:from "Your Name")
+
+Clearly, "Your Name" should not be that literally, but actually your name, in quotes. Hit Enter. You should see a line that looks like this:
+text from Ian McEwen index 0: test
+
+If all of this has gone off without a hitch, you should be up and ready to use code-immersion! If something seems to be amiss, go over this walkthrough again and make sure everything was done properly. If DrScheme or something else is giving you an error message, try to interpret it or use google to determine the cause of the problem. As a last resort, find someone to help you out.
+
+After the brief section on Linux-specific notes, read on to learn the basics of using code-immersion.
+
+FOR LINUX USERS:
+DrScheme can be acquired from another system such as a package manager (typically, if you are running a distribution of Linux -- on Ubuntu install it with 'sudo aptitude install drscheme' or through Synaptic).
+
+On Linux, a faster way to get code-immersion is to install the package 'git-core' with 'sudo aptitude install git-core' or through synaptic, and then (from the command line) running: 'git clone git://github.com/ianmcorvidae/code-immersion.git' in the directory ABOVE the one where you want code-immersion (the same folder you would extract the .zip or .tar.gz into).
+
+BASIC USAGE
+
+Any project you are working on, if you followed the above walkthrough, should be in a subfolder of the programming folder you have code-immersion in a subdirectory of. In order to use the features of code-immersion in any given file, you should have the (require "../code-immersion/server.ss") line at the top below the '#lang scheme' line. You should be using code-immersion in a classroom or other collaborative setting -- make sure that you change the server in config.ss (as described above) to the proper value as given to you by your instructor or other leader. Then, open up a new window and start the daemon as described above (open up daemon.ss, hit Run, run '(daemon)' in the REPL). Now you should be able to use the various functions of the client; I'll go over each below.
+
+1.) (send-code code): Use this, with 'code' being quoted code, to send code to everyone connected to the same server as you. For example, to send the code (display 'test) to everyone, use (send-code '(display 'test)). Note that there is only a single quote before the (display 'test), and none after. This is correct.
+
+2.) (send-message message): Use this, with 'message' being a string, to send a message to everyone. To send the message "test" to everyone, use (send-message "test).
+
+3.) (display-code #:number index #:from name): Use this to print out but not run code others have sent to you. 'index' should be replaced with a number 0 or greater; for the most recent thing sent, use 0; for the next-most-recent, 1, and so forth. 'name' should be the name of the person who sent the code. So, if you want to see the last piece of code I sent to you, use (display-code #:number 0 #:from "Ian McEwen").
+
+4.) (display-message #:number index #:from name): Use this to print out messages others have sent to you. 'index' and 'name' should be replaced as above -- so, to see the third-most-recent message I sent out, use (display-message #:number 2 #:from "Ian McEwen").
+
+5.) (evaluate-code #:number index #:from name): Use this to run code others have sent to you. The parameters are the same as for display-code. So, to run the second-most-recent piece of code I've sent to you, use (evaluate-code #:number 1 #:from "Ian McEwen").
+
+For more detailed (and more technical) information on code-immersion, read on into the REFERENCE section.
 
 REFERENCE
 
