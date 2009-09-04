@@ -67,6 +67,9 @@
 ;Evaluate requested code
 (define (evaluate-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
   (eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
+;list-eval
+(define (evaluate-list #:number index #:from name #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+  (for-each eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
 ;get
 (define (get type name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
   (cond
@@ -74,8 +77,13 @@
     [(or (equal? type "code") (equal? type "c")) (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string)]
     [else (format-prettily '("self" "text" "huh?"))]))
 ;run
-(define (run name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (evaluate-code #:number index #:from name #:daemon daemon #:port port))
+(define (run type name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+  (cond
+    [(or (equal? type "one") (equal? type 1) (equal? type "1") (equal? type "single"))
+     (evaluate-code #:number index #:from name #:daemon daemon #:port port)]
+    [(or (equal? type "list") (equal? type "+") (equal? type "multiple"))
+     (evaluate-list #:number index #:from name #:daemon daemon #:port port)]
+    [else (evaluate-code #:number index #:from name #:daemon daemon #:port port)]))
 ;send
 (define (send type content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
   (format-prettily (cond
