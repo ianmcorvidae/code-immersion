@@ -18,4 +18,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #lang scheme
 (require "server.ss")
-(server)
+(let loop ()
+  (server) 
+  (display "tell clients to reregister, the server made a boo-boo") 
+  (loop))

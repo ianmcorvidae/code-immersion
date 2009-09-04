@@ -72,7 +72,16 @@
   (cond
     [(or (equal? type "text") (equal? type "t") (equal? type "m") (equal? type "message")) (display-message #:number index #:from name #:daemon daemon #:port port #:format-string format-string)]
     [(or (equal? type "code") (equal? type "c")) (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string)]
-    [else #t]))
+    [else (format-prettily '("self" "text" "huh?"))]))
 ;run
 (define (run name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
   (evaluate-code #:number index #:from name #:daemon daemon #:port port))
+;send
+(define (send type content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
+  (format-prettily (cond
+                     [(or (equal? type "text") (equal? type "t") (equal? type "m") (equal? type "message")) (send-message #:name name #:server server #:port port content)]
+                     [(or (equal? type "code") (equal? type "c")) (send-code #:name name #:server server #:port port content)]
+                     [else '("self" "text" "huh?")])))
+;rereg
+(define (reregister #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+  (format-prettily (send-to-daemon #:daemon daemon #:port port #:type "reregister" "")))
