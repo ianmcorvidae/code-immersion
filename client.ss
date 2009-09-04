@@ -67,3 +67,12 @@
 ;Evaluate requested code
 (define (evaluate-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
   (eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
+;get
+(define (get type name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
+  (cond
+    [(or (equal? type "text") (equal? type "t") (equal? type "m") (equal? type "message")) (display-message #:number index #:from name #:daemon daemon #:port port #:format-string format-string)]
+    [(or (equal? type "code") (equal? type "c")) (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string)]
+    [else #t]))
+;run
+(define (run name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+  (evaluate-code #:number index #:from name #:daemon daemon #:port port))
