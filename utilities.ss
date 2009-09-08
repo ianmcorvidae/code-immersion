@@ -29,10 +29,10 @@
   (cond
     [(not (list? data)) #f]
     [(not (eq? (length data) 3)) #f]
-    [(and (string? (car data)) (string? (cadr data)) (or (string? (caddr data)) (list? (caddr data)))) 
+    [(and (string? (car data)) (string? (cadr data))) 
      (cond 
        [(equal? (cadr data) "code") 
-        (if (list? (caddr data)) #t #f)]
+        #t]
        [(equal? (cadr data) "text")
         (if (string? (caddr data)) 
             (if (not (string=? (caddr data) "")) #t #f) 

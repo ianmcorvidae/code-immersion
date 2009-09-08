@@ -46,6 +46,8 @@
   (send-to #:name name #:place server #:port port #:type type message))
 (define (send-to-daemon #:name [name NAME] #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
   (send-to #:name name #:place daemon #:port port #:type type message))
+
+;;; WHOLE BUNCH OF MIDDLEMAN CLIENT FUNCTIONS ;;;
 ;Send code to everyone with this; all parameters as send-to-server except code: quoted code to be sent
 (define (send-code #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] code)
   (send-to-server #:name name #:server server #:port port #:type "code" code))
@@ -69,27 +71,24 @@
   (eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
 ;list-eval
 (define (evaluate-list #:number index #:from name #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (for-each eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
+  (last (map eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port)))))
+
+;;; WHOLE BUNCH OF CLIENT FUNCTIONS ;;;
 ;get
-(define (get type name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
-  (cond
-    [(or (equal? type "text") (equal? type "t") (equal? type "m") (equal? type "message")) (display-message #:number index #:from name #:daemon daemon #:port port #:format-string format-string)]
-    [(or (equal? type "code") (equal? type "c")) (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string)]
-    [else (format-prettily '("self" "text" "huh?"))]))
+(define (gettext name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
+    (display-message #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
+(define (getcode name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
+    (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 ;run
-(define (run type name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (cond
-    [(or (equal? type "one") (equal? type 1) (equal? type "1") (equal? type "single"))
-     (evaluate-code #:number index #:from name #:daemon daemon #:port port)]
-    [(or (equal? type "list") (equal? type "+") (equal? type "multiple"))
-     (evaluate-list #:number index #:from name #:daemon daemon #:port port)]
-    [else (evaluate-code #:number index #:from name #:daemon daemon #:port port)]))
+(define (run name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+     (evaluate-code #:number index #:from name #:daemon daemon #:port port))
+(define (runlist name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+     (evaluate-list #:number index #:from name #:daemon daemon #:port port))
 ;send
-(define (send type content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
-  (format-prettily (cond
-                     [(or (equal? type "text") (equal? type "t") (equal? type "m") (equal? type "message")) (send-message #:name name #:server server #:port port content)]
-                     [(or (equal? type "code") (equal? type "c")) (send-code #:name name #:server server #:port port content)]
-                     [else '("self" "text" "huh?")])))
+(define (sendtext content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
+  (format-prettily (send-message #:name name #:server server #:port port content)))
+(define (sendcode content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
+  (format-prettily (send-code #:name name #:server server #:port port content)))
 ;rereg
 (define (reregister #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
   (format-prettily (send-to-daemon #:daemon daemon #:port port #:type "reregister" "")))
