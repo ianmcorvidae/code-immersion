@@ -81,7 +81,13 @@
     (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 ;run
 (define (run name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-     (evaluate-code #:number index #:from name #:daemon daemon #:port port))
+  (let* ((message (request-code #:number index #:from name #:daemon daemon #:port port))
+         (code (caddr message)))
+         (if (list? code)
+             (if (equal? (car code) "all")
+                 (last (map eval (cdr code)))
+                 (eval code))
+             (eval code))))
 (define (runlist name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
      (evaluate-list #:number index #:from name #:daemon daemon #:port port))
 ;send
