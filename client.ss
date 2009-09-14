@@ -47,7 +47,7 @@
 (define (send-to-daemon #:name [name NAME] #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
   (send-to #:name name #:place daemon #:port port #:type type message))
 
-;;; WHOLE BUNCH OF MIDDLEMAN CLIENT FUNCTIONS ;;;
+;;; WHOLE BUNCH OF MIDDLEMAN CLIENT FUNCTIONS -- these have hyphens;;;
 ;Send code to everyone with this; all parameters as send-to-server except code: quoted code to be sent
 (define (send-code #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] code)
   (send-to-server #:name name #:server server #:port port #:type "code" code))
@@ -73,7 +73,7 @@
 (define (evaluate-list #:number index #:from name #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
   (last (map eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port)))))
 
-;;; WHOLE BUNCH OF CLIENT FUNCTIONS ;;;
+;;; WHOLE BUNCH OF CLIENT FUNCTIONS -- these all don't have hyphens;;;
 ;get
 (define (gettext name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
     (display-message #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
@@ -97,4 +97,25 @@
   (format-prettily (send-code #:name name #:server server #:port port content)))
 ;rereg
 (define (reregister #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (format-prettily (send-to-daemon #:daemon daemon #:port port #:type "reregister" "")))
+  (format-prettily (send-to-daemon #:daemon daemon #:port port #:type "reregister" ""))) 
+(define (help #:long (long #f))
+  (begin
+    (display "(sendtext \"text\")\n   sends text") 
+    (display (if long " (text must be in double-quotes)\n" "\n"))
+    (display "(sendcode 'code)\n   sends code")
+    (display (if long " (you'll probably want to quote it, as demonstrated)\n" "\n"))
+    (display "(gettext \"name\" index)\n   displays text from others")
+    (display (if long " (name in double-quotes, index is a number)\n" "\n"))
+    (display "(getcode \"name\" index)\n   displays code from others")
+    (display (if long " (name in double-quotes, index is a number)\n" "\n"))
+    (display "(run \"name\" index)\n   runs code from others")
+    (display (if long " (name in double-quotes, index is a number)" "\n"))
+    (display "(reregister)\n   reregisters with server")
+    (display (if long "; do this if you aren't getting messages others are sending\n" "\n"))
+    (if long (display "(help)\n   displays short help\n")
+        (display "(help)\n   displays this message\n"))
+    (if long (display "(long-help)\n   displays this message\n")
+        (display "(long-help)\n   displays long help\n"))))
+(define (long-help)
+  (help #:long #t))
+  
