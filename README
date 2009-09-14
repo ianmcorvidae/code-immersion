@@ -36,3 +36,11 @@ COMMANDS
    displays short help
 (long-help)
    displays the text of this section
+
+NOTE ON CODE
+To send more than one s-expression of code at once, use the form ("all" ...) where ... is replaced with your code. So, to send all three of:
+(display 'foo)
+(newline)
+(display 'bar)
+use:
+(sendcode '("all" (display 'foo) (newline) (display 'bar)))
