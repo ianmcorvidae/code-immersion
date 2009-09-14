@@ -16,7 +16,7 @@
 ;    You should have received a copy of the GNU Affero General Public License ;
 ;    along with Code-Immersion.  If not, see <http://www.gnu.org/licenses/>.  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#lang scheme
+#lang scheme/load
 (let ([config-file-out (open-output-file "config.ss" #:exists 'replace)])
   (display "#lang scheme\n(require (except-in \"config-example.ss\" NAME SERVER))\n(provide (all-defined-out) (all-from-out \"config-example.ss\"))" config-file-out)
   (display "Enter your name:")
@@ -26,3 +26,6 @@
   (let ([address (read-line)])
       (display (format "(define SERVER \"~a\")~n" address) config-file-out))
   (close-output-port config-file-out))
+(require "daemon.ss")
+(daemon)
+      
