@@ -116,7 +116,7 @@
         (display "(help)\n   displays this message\n"))
     (if long (display "(long-help)\n   displays this message\n")
         (display "(long-help)\n   displays long help\n"))
-    (display "To send more than one bit of code at once, use (sendcode (\"all\" ...) with ... being your chunks of code.")))
+    (display "To send more than one bit of code at once, use (sendcode '(\"all\" ...) with ... being your chunks of code.")))
 (define (long-help)
   (help #:long #t))
   
