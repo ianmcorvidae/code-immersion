@@ -109,7 +109,7 @@
     (display "(getcode \"name\" index)\n   displays code from others")
     (display (if long " (name in double-quotes, index is a number)\n" "\n"))
     (display "(run \"name\" index)\n   runs code from others")
-    (display (if long " (name in double-quotes, index is a number)" "\n"))
+    (display (if long " (name in double-quotes, index is a number)\n" "\n"))
     (display "(reregister)\n   reregisters with server")
     (display (if long "; do this if you aren't getting messages others are sending\n" "\n"))
     (if long (display "(help)\n   displays short help\n")

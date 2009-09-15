@@ -30,7 +30,8 @@ COMMANDS
 (getcode "name" index)
    displays code from others (name in double-quotes, index is a number)
 (run "name" index)
-   runs code from others (name in double-quotes, index is a number)(reregister)
+   runs code from others (name in double-quotes, index is a number)
+(reregister)
    reregisters with server; do this if you aren't getting messages others are sending
 (help)
    displays short help
