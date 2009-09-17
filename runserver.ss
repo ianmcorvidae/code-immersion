@@ -22,7 +22,7 @@
   (close-output-port config-file-out))
 (require "server.ss") (require "utilities.ss")
 (ignoring-errors
-  (let loop ()
-    (server)
-    (display "tell clients to reregister, the server made a boo-boo") 
-    (loop)))
+  '(let loop () 
+     (server)
+     (display "tell clients to reregister, the server made a boo-boo") 
+     (loop)))
