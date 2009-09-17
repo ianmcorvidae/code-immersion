@@ -54,10 +54,10 @@
     (display (format format-string type name message))))
 
 ;A basic function that runs whatever code you throw at it ignoring every error that 
-;said code might have (returning #f). Should probably return a special value to 
+;said code might have (returning #t). Should probably return a special value to 
 ;indicate there was an error, but this is unnecessary for now.
 (define (ignoring-errors code)
-    (with-handlers ([(lambda (exn) #f) (lambda (exn) #f)])
+    (with-handlers ([(lambda (exn) #t) (lambda (exn) #t)])
       (eval code)))
 ;AGPL compliance: making it possible to send source through the application
 ;create a string from a text file. probably hackish and bad. So shoot me.
