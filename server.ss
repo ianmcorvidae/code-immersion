@@ -41,8 +41,9 @@
 ;Dispatching text (the function that actually does it)
 (define (dispatch name type message)
   (for ([port (get-output-port-list)])
-    (write `(,name ,type ,message) port)
-    (flush-output port)))
+    (with-handlers (((lambda (exn) #t) (lambda (exn) (close-output-port port) #t)))
+      (write `(,name ,type ,message) port)
+      (flush-output port))))
 ;The server! This could possibly be better-named. Anyway, configurable port --
 ;for now assuming that we want it to just listen on every address. Right now, 
 ;only sending of source really works.

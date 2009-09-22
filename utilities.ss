@@ -85,25 +85,28 @@
                    "COPYING:\n\n" (string-from-text-file copying))))
 ;server/daemon macro!
 (define-macro (define-listener-and-verifier port close? body)
-     `(let ([listener (tcp-listen ,port)])
-        ;So it keeps going, and going, and going...
-        (let loop ()
-          (let-values ([(client->me me->client)
-                        (tcp-accept listener)])
-            ;Reading the s-expression that should have been sent by a client, 
-            ;verifying it, then processing it based on the type
-            (let ([data (read client->me)])  
-              (if (verify-data data) 
-                  (let ([name (car data)]
-                        [type (cadr data)]
-                        [message (caddr data)])
-                    ;Check what exactly they want with a cond over (eq? type ...)
-                    (cond
-                      ,@body))
-                  (begin 
-                    (write '("server" "text" "Malformed data was ignored.") me->client)
-                    (close-output-port me->client))))
-            ;Whoops, we don't want this closed sometimes!
-            ,(when close? '(close-output-port me->client))
-            (close-input-port client->me))
-            (loop))))
+  `(let ([listener (tcp-listen ,port)])
+     ;So it keeps going, and going, and going...
+     (with-handlers (((lambda (exn) #t) (lambda (exn)
+                                          (tcp-close listener))))
+       (let loop ()
+         (let-values ([(client->me me->client)
+                       (tcp-accept listener)])
+           (with-handlers (((lambda (exn) #t) (lambda (exn) (close-input-port client->me) (close-output-port me->client) #t)))
+             ;Reading the s-expression that should have been sent by a client, 
+             ;verifying it, then processing it based on the type
+             (let ([data (read client->me)])  
+               (if (verify-data data) 
+                   (let ([name (car data)]
+                         [type (cadr data)]
+                         [message (caddr data)])
+                     ;Check what exactly they want with a cond over (eq? type ...)
+                     (cond
+                       ,@body))
+                   (begin 
+                     (write '("server" "text" "Malformed data was ignored.") me->client)
+                     (close-output-port me->client))))
+             ;Whoops, we don't want this closed sometimes!
+             ,(when close? '(close-output-port me->client))
+             (close-input-port client->me))
+           (loop))))))

@@ -21,8 +21,7 @@
   (display "#lang scheme\n(require \"config-example.ss\")\n(provide (all-defined-out) (all-from-out \"config-example.ss\"))" config-file-out)
   (close-output-port config-file-out))
 (require "server.ss") (require "utilities.ss")
-(ignoring-errors
-  '(let loop () 
-     (server)
-     (display "tell clients to reregister, the server made a boo-boo") 
-     (loop)))
+(let loop () 
+  (server)
+  (display "tell clients to reregister, the server made a boo-boo") 
+  (loop))
