@@ -36,12 +36,12 @@
 (define-values (register-client get-output-port-list)
   (let ([output-port-list '()])
     (values
-     (λ (port) (set! output-port-list (cons port output-port-list)) (write '("server" "text" "Registered.") port) (flush-output port))
+     (λ (port) (file-stream-buffer-mode port 'line) (set! output-port-list (cons port output-port-list)) (write '("server" "text" "Registered.") port) (flush-output port))
      (λ () output-port-list))))
 ;Dispatching text (the function that actually does it)
 (define (dispatch name type message)
   (for ([port (get-output-port-list)])
-    (with-handlers (((lambda (exn) #t) (lambda (exn) (close-output-port port) #t)))
+    (with-handlers (((lambda (exn) #t) (lambda (exn) (ignoring-errors (close-output-port port)) #t)))
       (write `(,name ,type ,message) port)
       (flush-output port))))
 ;The server! This could possibly be better-named. Anyway, configurable port --

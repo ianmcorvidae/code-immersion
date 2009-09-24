@@ -88,11 +88,11 @@
   `(let ([listener (tcp-listen ,port)])
      ;So it keeps going, and going, and going...
      (with-handlers (((lambda (exn) #t) (lambda (exn)
-                                          (tcp-close listener))))
+                                          (tcp-close listener) (kill-thread (current-thread)))))
        (let loop ()
          (let-values ([(client->me me->client)
                        (tcp-accept listener)])
-           (with-handlers (((lambda (exn) #t) (lambda (exn) (close-input-port client->me) (close-output-port me->client) #t)))
+           (with-handlers (((lambda (exn) #t) (lambda (exn) (close-input-port client->me) (close-output-port me->client) (raise exn))))
              ;Reading the s-expression that should have been sent by a client, 
              ;verifying it, then processing it based on the type
              (let ([data (read client->me)])  
