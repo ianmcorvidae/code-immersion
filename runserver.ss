@@ -23,7 +23,6 @@
 (require "server.ss") (require "utilities.ss")
 (define server-thread null)
 (let loop ()
-  (display "entering loop")
   (with-handlers (((lambda (exn) #t) (lambda (exn) (printf "hit exception ~A \n" exn) (kill-thread server-thread) #t)))
 		 (set! server-thread (thread server))
 		 (thread-wait server-thread)
