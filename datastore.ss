@@ -50,6 +50,9 @@
            [(not (list? hash-return-value)) (format "~a is not a list. The request was: ~a~nThis error is probably because there were no values found." hash-return-value hash-key)]
            [(not (> (length hash-return-value) list-index)) "Not enough values in list."]
            [else (list-ref hash-return-value list-index)])))
+     ;Users
+     (lambda ()
+       (hash-map hash-datastore (lambda (key val) (substring key 0 (- (string-length key) 5)))))
      )))
 (define DATASTORE 
   (cond 

@@ -98,6 +98,8 @@
 ;rereg
 (define (reregister #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
   (format-prettily (send-to-daemon #:daemon daemon #:port port #:type "reregister" ""))) 
+(define (users #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+  (caddr (send-to-daemon #:daemon daemon #:port port #:type "users" "")))
 (define (help #:long (long #f))
   (begin
     (display "(sendtext \"text\")\n   sends text") 

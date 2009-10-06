@@ -58,6 +58,9 @@
        ;For code
        [(equal? type "code")
         (write `(,(string-append (car message) (format " index ~a" (cadr message))) "code" ,(datastore-get "code" message)) me->client)]
+       ;Users list
+       [(equal? type "users")
+        (write `("List of users" "users" ,(remove-duplicates ((caddr DATASTORE)))) me->client)]
        ;For re-registering
        [(equal? type "reregister")
         (kill-thread register-thread)

@@ -33,6 +33,8 @@
      (cond 
        [(equal? (cadr data) "code") 
         #t]
+       [(equal? (cadr data) "users") 
+        #t]
        [(equal? (cadr data) "text")
         (if (string? (caddr data)) 
             (if (not (string=? (caddr data) "")) #t #f) 
