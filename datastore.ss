@@ -47,8 +47,8 @@
               [hash-return-value (hash-ref hash-datastore hash-key #f)]
               [list-index (cadr message)])
          (cond
-           [(not (list? hash-return-value)) (format "~a is not a list. The request was: ~a~nThis error is probably because there were no values found." hash-return-value hash-key)]
-           [(not (> (length hash-return-value) list-index)) "Not enough values in list."]
+           [(not (list? hash-return-value)) "invalid"];(format "~a is not a list. The request was: ~a~nThis error is probably because there were no values found." hash-return-value hash-key)]
+           [(not (> (length hash-return-value) list-index)) "invalid"]
            [else (list-ref hash-return-value list-index)])))
      ;Users
      (lambda ()
