@@ -17,10 +17,10 @@
 ;    along with Code-Immersion.  If not, see <http://www.gnu.org/licenses/>.  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 #lang scheme/load
-(let ([config-file-out (open-output-file "config.ss" #:exists 'replace)])
+(let ([config-file-out (open-output-file "../config.ss" #:exists 'replace)])
   (display "#lang scheme\n(require \"config-example.ss\")\n(provide (all-defined-out) (all-from-out \"config-example.ss\"))" config-file-out)
   (close-output-port config-file-out))
-(require "server.ss") (require "utilities.ss")
+(require "../server.ss") (require "../utilities.ss")
 (define server-thread null)
 (let loop ()
   (with-handlers (((lambda (exn) #t) (lambda (exn) (printf "hit exception ~A \n" exn) (kill-thread server-thread) #t)))
