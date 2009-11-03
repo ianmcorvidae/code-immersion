@@ -47,17 +47,17 @@
 (define (send-code #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] code)
   (send-to #:name name #:place server #:port port #:type "code" code))
 ;Send a message to everyone with this; all parameters as send-to-server except message, which will always be a string.
-(define (send-message #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] message)
+(define (send-text #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] message)
   (send-to #:name name #:place server #:port port #:type "text" message))
 ;Request message from the daemon
-(define (request-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
+(define (request-text #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
   (send-to #:place daemon #:port port #:type "text" `(,name ,index)))
 ;Request code from the daemon
 (define (request-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
   (send-to #:place daemon #:port port #:type "code" `(,name ,index)))
 ;Pretty-print requested message
-(define (display-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
-  (format-prettily (request-message #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
+(define (display-text #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
+  (format-prettily (request-text #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
 ;Pretty-print requested code
 (define (display-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
   (format-prettily (request-code #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
@@ -71,7 +71,7 @@
 ;;; WHOLE BUNCH OF CLIENT FUNCTIONS -- these all don't have hyphens;;;
 ;get
 (define (gettext name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
-    (display-message #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
+    (display-text #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 (define (getcode name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
     (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 ;run
@@ -87,7 +87,7 @@
      (evaluate-list #:number index #:from name #:daemon daemon #:port port))
 ;send
 (define (sendtext content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
-  (format-prettily (send-message #:name name #:server server #:port port content)))
+  (format-prettily (send-text #:name name #:server server #:port port content)))
 (define (sendcode content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
   (format-prettily (send-code #:name name #:server server #:port port content)))
 ;rereg
