@@ -41,25 +41,20 @@
     (let ([response (read place->me)])
       (close-input-port place->me)
       response)))
-;Send something to server. Parameters as above, except s/place/server|daemon/ as applies
-(define (send-to-server #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] #:type type message)
-  (send-to #:name name #:place server #:port port #:type type message))
-(define (send-to-daemon #:name [name NAME] #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
-  (send-to #:name name #:place daemon #:port port #:type type message))
 
 ;;; WHOLE BUNCH OF MIDDLEMAN CLIENT FUNCTIONS -- these have hyphens;;;
 ;Send code to everyone with this; all parameters as send-to-server except code: quoted code to be sent
 (define (send-code #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] code)
-  (send-to-server #:name name #:server server #:port port #:type "code" code))
+  (send-to #:name name #:place server #:port port #:type "code" code))
 ;Send a message to everyone with this; all parameters as send-to-server except message, which will always be a string.
 (define (send-message #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] message)
-  (send-to-server #:name name #:server server #:port port #:type "text" message))
+  (send-to #:name name #:place server #:port port #:type "text" message))
 ;Request message from the daemon
 (define (request-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
-  (send-to-daemon #:daemon daemon #:port port #:type "text" `(,name ,index)))
+  (send-to #:place daemon #:port port #:type "text" `(,name ,index)))
 ;Request code from the daemon
 (define (request-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
-  (send-to-daemon #:daemon daemon #:port port #:type "code" `(,name ,index)))
+  (send-to #:place daemon #:port port #:type "code" `(,name ,index)))
 ;Pretty-print requested message
 (define (display-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
   (format-prettily (request-message #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
@@ -97,9 +92,9 @@
   (format-prettily (send-code #:name name #:server server #:port port content)))
 ;rereg
 (define (reregister #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (format-prettily (send-to-daemon #:daemon daemon #:port port #:type "reregister" ""))) 
+  (format-prettily (send-to #:place daemon #:port port #:type "reregister" ""))) 
 (define (users #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (caddr (send-to-daemon #:daemon daemon #:port port #:type "users" "")))
+  (caddr (send-to #:place daemon #:port port #:type "users" "")))
 (define (help #:long (long #f))
   (begin
     (display "(sendtext \"text\")\n   sends text") 
