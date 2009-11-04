@@ -16,16 +16,17 @@
 ;    You should have received a copy of the GNU Affero General Public License ;
 ;    along with Code-Immersion.  If not, see <http://www.gnu.org/licenses/>.  ;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-#lang scheme/load
-(let ([config-file-out (open-output-file "../config.ss" #:exists 'replace)])
-  (display "#lang scheme\n(require (except-in \"config-example.ss\" NAME SERVER))\n(provide (all-defined-out) (all-from-out \"config-example.ss\"))" config-file-out)
-  (display "Enter your name:")
-  (let ([name (read-line)])
-    (display (format "(define NAME \"~a\")~n" name) config-file-out))
-  (display "Enter the server address:")
-  (let ([address (read-line)])
-      (display (format "(define SERVER \"~a\")~n" address) config-file-out))
-  (close-output-port config-file-out))
+#lang scheme
 (require "../daemon.ss")
+(require "../config.ss")
+(call-with-output-file config-file #:exists 'replace
+  (lambda (config-file-out)
+    (display "(" config-file-out)
+    (display "Enter your name:")
+    (display (format "(NAME \"~a\")~n" (read-line)) config-file-out)
+    (display "Enter the server address:")
+    (display (format "(SERVER \"~a\")~n" (read-line)) config-file-out)
+    (display ")" config-file-out)
+    (close-output-port config-file-out)))
+(reread-config)
 (daemon)
-      

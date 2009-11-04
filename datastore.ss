@@ -19,16 +19,6 @@
 #lang scheme
 (require "config.ss")
 (provide (all-defined-out))
-;data storage: list datastore
-(define list-datastore
-  (let ([list-datastore '()])
-    (list
-     ;Datastore put function
-     (lambda (type message)
-       #t)
-     ;Datastore get function
-     (lambda (type message)
-       (format "~a ~a" type message)))))
 ;data storage: hashtable datastore
 (define hash-datastore
   (let ([hash-datastore (make-hash)])
@@ -56,8 +46,6 @@
      )))
 (define DATASTORE 
   (cond 
-    [(equal? DATASTORE-TYPE "list-datastore")
-     list-datastore]
-    [(equal? DATASTORE-TYPE "hash-datastore")
+    [(equal? (DATASTORE-TYPE) "hash-datastore")
      hash-datastore]
     [else hash-datastore]))

@@ -37,7 +37,7 @@
 ;only sending of source really works.
 
 ;TODO: Make everything else work again
-(define (server #:port [port SERVER-PORT])
+(define (server #:port [port (SERVER-PORT)])
   (define-listener-and-verifier port #f
     (
         ;Send source to the client (AGPL compliance).
