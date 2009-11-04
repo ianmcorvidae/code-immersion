@@ -33,6 +33,8 @@ COMMANDS
    runs code from others (name in double-quotes, index is a number)
 (reregister)
    reregisters with server; do this if you aren't getting messages others are sending
+(users)
+   returns a list of users; do this if you need such a list (perhaps for iteration)
 (help)
    displays short help
 (long-help)
