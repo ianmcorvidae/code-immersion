@@ -114,7 +114,7 @@
     (display (if long " (name in double-quotes, index is a number)\n" "\n"))
     (display "(reregister)\n   reregisters with server")
     (display (if long "; do this if you aren't getting messages others are sending\n" "\n"))
-    (display "(users)\n	returns a list of users")
+    (display "(users)\n   returns a list of users")
     (display (if long "; do this if you need such a list (perhaps for iteration)\n" "\n"))
     (if long (display "(help)\n   displays short help\n")
         (display "(help)\n   displays this message\n"))
