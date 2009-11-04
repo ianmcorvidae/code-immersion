@@ -62,11 +62,11 @@
 (define (display-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
   (format-prettily (request-code #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
 ;Evaluate requested code
-(define (evaluate-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
-  (eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
-;list-eval (NOT USED, PROBABLY TO GET RID OF/RENAME?)
-(define (evaluate-list #:number index #:from name #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (last (map eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port)))))
+(define (evaluate-one #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:eval-function [eval-function eval])
+  (eval-function (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
+;list-eval 
+(define (evaluate-list #:number index #:from name #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:eval-function (eval-function eval))
+  (last (map eval-function (caddr (request-code #:number index #:from name #:daemon daemon #:port port)))))
 
 ;;; WHOLE BUNCH OF CLIENT FUNCTIONS -- these all don't have hyphens;;;
 ;get
@@ -75,16 +75,14 @@
 (define (getcode name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
     (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 ;run
-(define (run name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+(define (run name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:eval-function (eval-function eval))
   (let* ((message (request-code #:number index #:from name #:daemon daemon #:port port))
          (code (caddr message)))
          (if (list? code)
              (if (equal? (car code) "all")
-                 (last (map eval (cdr code)))
-                 (eval code))
-             (eval code))))
-(define (runlist name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-     (evaluate-list #:number index #:from name #:daemon daemon #:port port))
+                 (last (map eval-function (cdr code)))
+                 (eval-function code))
+             (eval-function code))))
 ;send
 (define (sendtext content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
   (format-prettily (send-text #:name name #:server server #:port port content)))
