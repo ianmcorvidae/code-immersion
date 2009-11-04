@@ -64,7 +64,7 @@
 ;Evaluate requested code
 (define (evaluate-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
   (eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
-;list-eval
+;list-eval (NOT USED, PROBABLY TO GET RID OF/RENAME?)
 (define (evaluate-list #:number index #:from name #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
   (last (map eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port)))))
 
