@@ -30,11 +30,7 @@
            (set! thread-list (cons (thread (lambda () 
                                              (hash-set! database user code)
                                              (printf "~a:\t~v\t" user code)
-                                             (if (list? code)
-                                                 (if (equal? (car code) "all")
-                                                     (last (map ignoring-errors (cdr code)))
-                                                     (ignoring-errors code))
-                                                 (ignoring-errors code))
+					     (run "null" 0 #:eval-function ignoring-errors #:code code)
                                              (newline)))
                                    thread-list))))))))
 

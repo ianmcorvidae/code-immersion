@@ -69,15 +69,16 @@
   (last (map eval-function (caddr (request-code #:number index #:from name #:daemon daemon #:port port)))))
 
 ;;; WHOLE BUNCH OF CLIENT FUNCTIONS -- these all don't have hyphens;;;
+;;;
 ;get
 (define (gettext name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:format-string (format-string (FORMAT-STRING)))
     (display-text #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 (define (getcode name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:format-string (format-string (FORMAT-STRING)))
     (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 ;run
-(define (run name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:eval-function (eval-function eval))
+(define (run name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:eval-function (eval-function eval) #:code (provided-code null))
   (let* ((message (request-code #:number index #:from name #:daemon daemon #:port port))
-         (code (caddr message)))
+         (code (or provided-code (caddr message))))
          (if (list? code)
              (if (equal? (car code) "all")
                  (last (map eval-function (cdr code)))
