@@ -1,8 +1,8 @@
 #lang scheme
 (require "../client.ss")
 (sendcode '(require scheme/gui/base))
-(sendcode '("all" (define width 500)
-                  (define height 500)
+(sendcode '("all" (define width 1000)
+                  (define height 1000)
                   
                   (define frame (new frame% (label "Drawing Window")
                                      (width width)
