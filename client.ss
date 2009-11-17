@@ -30,7 +30,7 @@
 ;message Content of message. For text messages, string. 
 ;                            For code, quoted expressions.
 ;                            For other operations, blank string.
-(define (send-to #:name [name NAME] #:place place #:port port #:type type message)
+(define (send-to #:name [name (NAME)] #:place place #:port port #:type type message)
   (let-values ([(place->me me->place)
                 (tcp-connect place port)])
     ;Doing this right for once: now it sends a pretty s-expression
@@ -41,65 +41,59 @@
     (let ([response (read place->me)])
       (close-input-port place->me)
       response)))
-;Send something to server. Parameters as above, except s/place/server|daemon/ as applies
-(define (send-to-server #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] #:type type message)
-  (send-to #:name name #:place server #:port port #:type type message))
-(define (send-to-daemon #:name [name NAME] #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:type type message)
-  (send-to #:name name #:place daemon #:port port #:type type message))
 
 ;;; WHOLE BUNCH OF MIDDLEMAN CLIENT FUNCTIONS -- these have hyphens;;;
 ;Send code to everyone with this; all parameters as send-to-server except code: quoted code to be sent
-(define (send-code #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] code)
-  (send-to-server #:name name #:server server #:port port #:type "code" code))
+(define (send-code #:name [name (NAME)] #:server [server (SERVER)] #:port [port (SERVER-PORT)] code)
+  (send-to #:name name #:place server #:port port #:type "code" code))
 ;Send a message to everyone with this; all parameters as send-to-server except message, which will always be a string.
-(define (send-message #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT] message)
-  (send-to-server #:name name #:server server #:port port #:type "text" message))
+(define (send-text #:name [name (NAME)] #:server [server (SERVER)] #:port [port (SERVER-PORT)] message)
+  (send-to #:name name #:place server #:port port #:type "text" message))
 ;Request message from the daemon
-(define (request-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
-  (send-to-daemon #:daemon daemon #:port port #:type "text" `(,name ,index)))
+(define (request-text #:number index #:from name #:daemon [daemon (DAEMON)] #:port [port (DAEMON-PORT)])
+  (send-to #:place daemon #:port port #:type "text" `(,name ,index)))
 ;Request code from the daemon
-(define (request-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
-  (send-to-daemon #:daemon daemon #:port port #:type "code" `(,name ,index)))
+(define (request-code #:number index #:from name #:daemon [daemon (DAEMON)] #:port [port (DAEMON-PORT)])
+  (send-to #:place daemon #:port port #:type "code" `(,name ,index)))
 ;Pretty-print requested message
-(define (display-message #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
-  (format-prettily (request-message #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
+(define (display-text #:number index #:from name #:daemon [daemon (DAEMON)] #:port [port (DAEMON-PORT)] #:format-string [format-string (FORMAT-STRING)])
+  (format-prettily (request-text #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
 ;Pretty-print requested code
-(define (display-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT] #:format-string [format-string FORMAT-STRING])
+(define (display-code #:number index #:from name #:daemon [daemon (DAEMON)] #:port [port (DAEMON-PORT)] #:format-string [format-string (FORMAT-STRING)])
   (format-prettily (request-code #:number index #:from name #:daemon daemon #:port port) #:format-string format-string))
 ;Evaluate requested code
-(define (evaluate-code #:number index #:from name #:daemon [daemon DAEMON] #:port [port DAEMON-PORT])
-  (eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
-;list-eval
-(define (evaluate-list #:number index #:from name #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (last (map eval (caddr (request-code #:number index #:from name #:daemon daemon #:port port)))))
+(define (evaluate-one #:number index #:from name #:daemon [daemon (DAEMON)] #:port [port (DAEMON-PORT)] #:eval-function [eval-function eval])
+  (eval-function (caddr (request-code #:number index #:from name #:daemon daemon #:port port))))
+;list-eval 
+(define (evaluate-list #:number index #:from name #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:eval-function (eval-function eval))
+  (last (map eval-function (caddr (request-code #:number index #:from name #:daemon daemon #:port port)))))
 
 ;;; WHOLE BUNCH OF CLIENT FUNCTIONS -- these all don't have hyphens;;;
+;;;
 ;get
-(define (gettext name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
-    (display-message #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
-(define (getcode name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT) #:format-string (format-string FORMAT-STRING))
+(define (gettext name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:format-string (format-string (FORMAT-STRING)))
+    (display-text #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
+(define (getcode name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:format-string (format-string (FORMAT-STRING)))
     (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 ;run
-(define (run name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
+(define (run name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:eval-function (eval-function eval) #:code (provided-code null))
   (let* ((message (request-code #:number index #:from name #:daemon daemon #:port port))
-         (code (caddr message)))
+         (code (or provided-code (caddr message))))
          (if (list? code)
              (if (equal? (car code) "all")
-                 (last (map eval (cdr code)))
-                 (eval code))
-             (eval code))))
-(define (runlist name index #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-     (evaluate-list #:number index #:from name #:daemon daemon #:port port))
+                 (last (map eval-function (cdr code)))
+                 (eval-function code))
+             (eval-function code))))
 ;send
-(define (sendtext content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
-  (format-prettily (send-message #:name name #:server server #:port port content)))
-(define (sendcode content #:name [name NAME] #:server [server SERVER] #:port [port SERVER-PORT])
+(define (sendtext content #:name [name (NAME)] #:server [server (SERVER)] #:port [port (SERVER-PORT)])
+  (format-prettily (send-text #:name name #:server server #:port port content)))
+(define (sendcode content #:name [name (NAME)] #:server [server (SERVER)] #:port [port (SERVER-PORT)])
   (format-prettily (send-code #:name name #:server server #:port port content)))
 ;rereg
-(define (reregister #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (format-prettily (send-to-daemon #:daemon daemon #:port port #:type "reregister" ""))) 
-(define (users #:daemon (daemon DAEMON) #:port (port DAEMON-PORT))
-  (caddr (send-to-daemon #:daemon daemon #:port port #:type "users" "")))
+(define (reregister #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)))
+  (format-prettily (send-to #:place daemon #:port port #:type "reregister" ""))) 
+(define (users #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)))
+  (caddr (send-to #:place daemon #:port port #:type "users" "")))
 (define (help #:long (long #f))
   (begin
     (display "(sendtext \"text\")\n   sends text") 

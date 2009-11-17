@@ -51,7 +51,7 @@
         (if (string? (caddr data)) #t #f)])]
     [else #f]))
 ;formatting function for displaying messages/code
-(define (format-prettily message #:format-string [format-string FORMAT-STRING])
+(define (format-prettily message #:format-string [format-string (FORMAT-STRING)])
   (let ([name (car message)] [type (cadr message)] [message (caddr message)])
     (display (format format-string type name message))))
 

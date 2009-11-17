@@ -21,34 +21,23 @@
 (provide server)
 (require "utilities.ss")
 (require "config.ss")
-;new testing server just prints out what it's given. To be moved later, probably into a package of tests.
-(define (new-server #:port [port SERVER-PORT])
-  (let ([listener (tcp-listen port)])
-    (let loop ()
-      (let-values ([(client->me me->client)
-                    (tcp-accept listener)])
-        (let ([s-read (read client->me)])
-          (print s-read))
-        (close-output-port me->client)
-        (close-input-port client->me))
-      (loop))))
-;Registration and getting of output ports
+;Registration and getting of output ports -- closures!
 (define-values (register-client get-output-port-list)
   (let ([output-port-list '()])
     (values
      (λ (port) (file-stream-buffer-mode port 'none) (set! output-port-list (cons port output-port-list)) (write '("server" "text" "Registered.") port))
      (λ () output-port-list))))
-;Dispatching text (the function that actually does it)
+;Dispatching stuff (the function that actually does it)
 (define (dispatch name type message)
   (for ([port (get-output-port-list)])
-    (with-handlers (((lambda (exn) #t) (lambda (exn) (ignoring-errors (close-output-port port)) #t)))
+    (with-handlers (((lambda (exn) #t) (lambda (exn) (close-output-port port) #t)))
       (write `(,name ,type ,message) port))))
 ;The server! This could possibly be better-named. Anyway, configurable port --
 ;for now assuming that we want it to just listen on every address. Right now, 
 ;only sending of source really works.
 
 ;TODO: Make everything else work again
-(define (server #:port [port SERVER-PORT])
+(define (server #:port [port (SERVER-PORT)])
   (define-listener-and-verifier port #f
     (
         ;Send source to the client (AGPL compliance).

@@ -25,7 +25,7 @@
 ;registration function
 ;#:server Server hostname or IP, as a string.
 ;#:port Server port, as an integer.
-(define (register-with #:server [server SERVER] #:port [port SERVER-PORT] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
+(define (register-with #:server [server (SERVER)] #:port [port (SERVER-PORT)] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
   (let-values ([(server->me me->server)
                 (tcp-connect server port)])
     ;This is in standard (NAME TYPE MESSAGE) format, except you only really need
@@ -43,7 +43,7 @@
     (close-input-port server->me)))
 
 ;the daemon itself
-(define (daemon #:server [server SERVER] #:server-port [server-port SERVER-PORT] #:self-port [self-port DAEMON-PORT] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
+(define (daemon #:server [server (SERVER)] #:server-port [server-port (SERVER-PORT)] #:self-port [self-port (DAEMON-PORT)] #:datastore-put [datastore-put (car DATASTORE)] #:datastore-get [datastore-get (cadr DATASTORE)])
   (let ([register-thread (thread (λ () (register-with #:server server #:port server-port)))])
     (define-listener-and-verifier self-port #t
       (;Send source to the client (AGPL compliance).
