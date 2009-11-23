@@ -1,9 +1,9 @@
 #lang scheme
 (provide reread-config config-file SERVER DAEMON SERVER-PORT DAEMON-PORT NAME FORMAT-STRING DATASTORE-TYPE)
 (define config-file (string-append (path->string (find-system-path 'pref-dir)) "code-immersion.config"))
-(define read-config  (lambda () 
-                       (if (file-exists? config-file)
-                           (call-with-input-file config-file
+(define read-config  (lambda ((configuration-file config-file)) 
+                       (if (file-exists? configuration-file)
+                           (call-with-input-file configuration-file
                              (lambda (in) (read in)) 
                              #:mode 'text)
                            null)))
@@ -16,7 +16,7 @@
                   (DATASTORE-TYPE "hash-datastore")))
 (define config (read-config))
 (define reread-config 
-  (lambda () (set! config (read-config))))
+  (lambda ((configuration-file config-file)) (set! config (read-config configuration-file))))
 (define SERVER 
   (lambda () (second (or (assoc 'SERVER config) (assoc 'SERVER default)))))
 (define DAEMON 
