@@ -44,6 +44,8 @@
      (lambda ()
        (hash-map hash-datastore (lambda (key val) (substring key 0 (- (string-length key) 5)))))
      )))
+(define datastores
+  (list hash-datastore))
 (define DATASTORE 
   (cond 
     [(equal? (DATASTORE-TYPE) "hash-datastore")
