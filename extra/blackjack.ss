@@ -142,7 +142,7 @@
                         (set! someone-hit #f)
                         (do ((player-number 0 (+ player-number 1))) ;; ask each player if wants card
                           ((>= player-number (length players)))
-                          (when (and (< (best-total (list-ref hands player-number)) 22) ;; can only hit if still < 22
+                          (when (and (not (= (best-total (list-ref hands player-number)) 22)) ;; can only hit if still < 22
                                      ((cadr (assoc (list-ref names player-number) players))
                                       (list-ref hands player-number)
                                       (map cdr (list-without hands player-number))))
@@ -161,11 +161,12 @@
 (sendcode '("all"
             (require "../datastore.ss")
             (require "../config.ss")
-            (define-values (blackjack-put blackjack-get)
+            (define-values (blackjack-put blackjack-get blackjack-clear)
               (let ((datastore-put (car DATASTORE)) (datastore-get (cadr DATASTORE)) (users (caddr DATASTORE)))
                 (values
                  (lambda (user function)
                    (datastore-put "jack" `(,user ,function)))
                  (lambda ()
-                   (map (lambda (user) `(,user ,(datastore-get "jack" (list user 0)))) (users))))))
+                   (map (lambda (user) `(,user ,(datastore-get "jack" (list user 0)))) (users)))
+		 (lambda () (map (lambda (list) (datastore-put "jack" `(,(car list) ,(lambda (a b) #f)))) (blackjack-get))))))
             ))
