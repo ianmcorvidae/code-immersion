@@ -44,10 +44,14 @@
      (lambda ()
        (hash-map hash-datastore (lambda (key val) (substring key 0 (- (string-length key) 5)))))
      )))
+(define null-datastore
+  (list (lambda (type message) null) (lambda (type message) null) (lambda () null)))
 (define datastores
-  (list hash-datastore))
+  `((hash-datastore ,hash-datastore) (null-datastore ,null-datastore)))
 (define DATASTORE 
   (cond 
     [(equal? (DATASTORE-TYPE) "hash-datastore")
      hash-datastore]
+    [(equal? (DATASTORE-TYPE) "null-datastore")
+     null-datastore]
     [else hash-datastore]))

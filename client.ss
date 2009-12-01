@@ -76,7 +76,7 @@
 (define (getcode name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:format-string (format-string (FORMAT-STRING)))
     (display-code #:number index #:from name #:daemon daemon #:port port #:format-string format-string))
 ;run
-(define (run name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:eval-function (eval-function eval) #:code (provided-code null))
+(define (run name index #:daemon (daemon (DAEMON)) #:port (port (DAEMON-PORT)) #:eval-function (eval-function eval) #:code (provided-code #f))
   (let* ((message (request-code #:number index #:from name #:daemon daemon #:port port))
          (code (or provided-code (caddr message))))
          (if (list? code)

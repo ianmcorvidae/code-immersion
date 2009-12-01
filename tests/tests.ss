@@ -1,4 +1,4 @@
-#lang scheme/base
+#lang scheme
 
 (require (planet schematics/schemeunit:3)
          (planet schematics/schemeunit:3/text-ui)
@@ -26,8 +26,14 @@
     "Tests for utilities.ss")
    
    (test-suite
-    "Tests for datastore.ss")
-   
+    "Tests for datastore.ss"
+    (for-each (lambda (datastore) (test-case (format "proper number of functions: ~a" (first datastore)) (check-equal? 3 (length (second datastore))))) datastores)
+    (for-each (lambda (datastore) (test-case (format "proper procedure arity: ~a" (first datastore))
+					     (let ((actual-datastore (second datastore)))
+					       (check-equal? 2 (procedure-arity (first actual-datastore)))
+					       (check-equal? 2 (procedure-arity (second actual-datastore)))
+					       (check-equal? 0 (procedure-arity (third actual-datastore))))))
+	      datastores))   
    (test-suite
     "Tests for config.ss"
     (test-case "config-file is proper"
