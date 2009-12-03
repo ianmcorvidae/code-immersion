@@ -126,10 +126,11 @@
                     (printf "\nGame #~A" game)
                     (let* ((cards (shuffle (four-decks)))
                            (names (shuffle (map car players))) ;; shuffle player order
-                           (hands (map (lambda (x)             ;; deal down cards
-                                         (let ((card (car cards)))
-                                           (set! cards (cdr cards))
-                                           (list card)))
+                           (hands (map (lambda (x)             ;; deal initial cards
+                                         (let ((my-cards (list (car cards)
+                                                               (cadr cards))))
+                                           (set! cards (cddr cards))
+                                           my-cards))
                                        names))
                            (game-over #f)
                            (someone-hit #f))
@@ -142,7 +143,7 @@
                         (set! someone-hit #f)
                         (do ((player-number 0 (+ player-number 1))) ;; ask each player if wants card
                           ((>= player-number (length players)))
-                          (when (and (not (= (best-total (list-ref hands player-number)) 22)) ;; can only hit if still < 22
+                          (when (and (> (best-total (list-ref hands player-number)) 0) ;; can only hit if still alive
                                      ((cadr (assoc (list-ref names player-number) players))
                                       (list-ref hands player-number)
                                       (map cdr (list-without hands player-number))))
@@ -157,6 +158,7 @@
                         (unless someone-hit (set! game-over #t))
                         (unless (> (apply max (map best-total hands)) 0) (set! game-over #t)))))
                   (sort scores > #:key second))))
+            
             ))
 (sendcode '("all"
             (require "../datastore.ss")
@@ -168,5 +170,5 @@
                    (datastore-put "jack" `(,user ,function)))
                  (lambda ()
                    (map (lambda (user) `(,user ,(datastore-get "jack" (list user 0)))) (users)))
-		 (lambda () (map (lambda (list) (datastore-put "jack" `(,(car list) ,(lambda (a b) #f)))) (blackjack-get))))))
+                 (lambda () (map (lambda (list) (datastore-put "jack" `(,(car list) ,(lambda (a b) #f)))) (blackjack-get))))))
             ))
