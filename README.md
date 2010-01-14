@@ -1,7 +1,7 @@
 Introduction
 ============
 
-code-immersion was created for Lee Spector's Fall 2009 course at Hampshire College, "Code Immersion". The class blog can be found at [codeimmersion.i3ci.hampshire.edu](http://codeimmersion.i3ci.hampshire.edu/). The homepage for this code is on github [here](http://github.com/ianmcorvidae/code-immersion).
+code-immersion was created for Lee Spector's Fall 2009 course at Hampshire College, "Code Immersion". The class blog can be found at [codeimmersion.i3ci.hampshire.edu](http://codeimmersion.i3ci.hampshire.edu/). The homepage for this code is on github [here](http://github.com/ianmcorvidae/code-immersion) and now also at gitorious [here](http://gitorious.org/code-immersion/code-immersion).
 
 code-immersion is a lightweight PLT Scheme framework for collaborative code-sharing, originally implemented to be run on top of drscheme. The server listens for input from clients, who send code to this machine to be dispatched to the group for their perusal and possible use; this process of group creation should (hopefully) be instructive. 
 
